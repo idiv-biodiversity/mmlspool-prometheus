@@ -4,7 +4,7 @@ use clap::{App, Arg, ArgMatches};
 
 #[derive(Debug)]
 pub struct Arguments {
-    pub fs_names: Vec<String>,
+    pub fs_names: Option<Vec<String>>,
 }
 
 impl TryFrom<ArgMatches> for Arguments {
@@ -13,9 +13,7 @@ impl TryFrom<ArgMatches> for Arguments {
     fn try_from(args: ArgMatches) -> Result<Self, Self::Error> {
         let fs = args
             .values_of("filesystems")
-            .unwrap()
-            .map(|s| s.into())
-            .collect::<Vec<String>>();
+            .map(|v| v.map(Into::into).collect::<Vec<String>>());
 
         Ok(Self { fs_names: fs })
     }
@@ -31,8 +29,8 @@ pub fn build() -> App<'static> {
     let fs = Arg::new("filesystems")
         .takes_value(true)
         .multiple_values(true)
-        .required(true)
-        .about("file systems");
+        .about("file systems")
+        .long_about("File systems. If not specified, reads from STDIN.");
 
     App::new("mmlspool-prometheus")
         .about("mmlspool to prometheus")
